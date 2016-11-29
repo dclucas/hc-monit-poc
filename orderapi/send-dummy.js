@@ -4,7 +4,4 @@ const uuid = require('uuid');
 const config = require('./config');
 const events = require('./events')(config);
 
-//todo: put queue name here
-events.subscribe(function(msg) {
-    console.log(JSON.stringify(msg.content));
-});
+events.publish({ customerId: uuid.v4() });
