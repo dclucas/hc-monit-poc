@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node app.js",
     "test": "./node_modules/.bin/ava",
-    "watch": "./node_modules/.bin/ava --watch",
+    "watch": "./node_modules/.bin/nodemon app.js",
+    "watch-test": "./node_modules/.bin/ava --watch",
     "send-dummy": "node send-dummy.js"
   },
   "keywords": [],
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "ava": "^0.17.0",
-    "got": "^6.6.3"
+    "got": "^6.6.3",
+    "nodemon": "^1.11.0"
   }
 }
