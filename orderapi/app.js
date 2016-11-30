@@ -4,6 +4,8 @@ const uuid = require('uuid');
 const config = require('./config');
 const events = require('./events')(config);
 const healthcheck = require('./healthcheck');
+const errorHandler = require('./errors');
+const logger = require('./logger');
 const Hapi = require('hapi');
 const Hoek = require('hoek');
 const Joi = require('joi');
@@ -37,6 +39,13 @@ function addTotals(payload) {
     }
     return deepMerge(payload, data);
 }
+
+function handleInternalError(reply, msg = 'Internal Server Error', err = undefined, level = 'error') {
+    const payload = errorHandler.report(err, msg, level);
+    healthcheck.changeStatus('red', msg);
+    reply(payload).code(500);
+}
+
 server.route({
     method: 'POST',
     path: '/orders',
@@ -52,8 +61,15 @@ server.route({
             }
         };
         const payload = addTotals(deepMerge(request.payload, defaultData));
-        events.publish(events.fromResource(payload, 'orders.created'));
-        reply(payload).code(202);
+        events.publish(events.fromResource(payload, 'orders.created'))
+        .subscribe(
+            () => {}, 
+            (err) => handleInternalError(reply, 'Failed to broadcast order creation', err, 'fatal'),
+            () => {
+                healthcheck.resetStatus();
+                reply(payload).code(202);
+            }
+        );
     },
     config: {
         tags: ['api'],
