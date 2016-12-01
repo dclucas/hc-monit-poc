@@ -9,8 +9,15 @@ module.exports = function(config) {
     
     return {
         checkChannel: function() {
-            
+            return RxAmqpLib.newConnection(config.amqpHost)
+              .flatMap(connection => connection
+                .createChannel()
+                .flatMap(channel => channel.assertExchange(config.exchange, config.exchangeType, {durable: false}))
+                .flatMap(exchange => exchange.channel.close())
+                .flatMap(() => connection.close())
+              );
         },
+
         fromResource: function(resource, eventType) {
             return {
                 createdOn: new Date(),
@@ -20,9 +27,10 @@ module.exports = function(config) {
                 payload: resource
             }
         },
+
         publish: function(eventData) {
             logger.trace('Publishing event', eventData);
-            var str = RxAmqpLib.newConnection(config.host)
+            return RxAmqpLib.newConnection(config.amqpHost)
               .flatMap(connection => connection
                 .createChannel()
                 .flatMap(channel => channel.assertExchange(config.exchange, config.exchangeType, {durable: false}))
@@ -30,8 +38,6 @@ module.exports = function(config) {
                 .flatMap(exchange => exchange.channel.close())
                 .flatMap(() => connection.close())
               );
-            //str.subscribe(() => {}, err => errorHandler.report(err, 'Failed to publish event', 'fatal'), () => console.log('Messages sent'));
-            return str;
         }
     }
 }

@@ -110,6 +110,15 @@ module.exports = new Promise(function(resolve, reject) {
                 reject(err)
             }
             console.log(`Server started at ${server.info.uri}`);
+            events.checkChannel()
+            .subscribe(
+                () => {}, 
+                (err) => {
+                    healthcheck.changeStatus('red', 'Cannot connect to channel');
+                },
+                () => {}
+            );
+
             resolve(server);
         });
     });

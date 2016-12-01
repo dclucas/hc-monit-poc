@@ -1,0 +1,29 @@
+version: "2"
+services:
+  orderapi: 
+    build: orderapi
+    ports: 
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      RABBIT_URI: "amqp:admin:admin@localhost:5672"
+    depends_on:
+      - rabbit
+  billingsvc: 
+    build: billingsvc
+    ports: 
+      - "3100:3100"
+    environment:
+      PORT: 3100
+      RABBIT_URI: "amqp:admin:admin@localhost:5672"
+    depends_on:
+      - rabbit
+  rabbit:
+    image: rabbitmq:3.5.6-management
+    hostname: hc-rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
