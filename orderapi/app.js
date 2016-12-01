@@ -6,6 +6,7 @@ const events = require('./events')(config);
 const healthcheck = require('./healthcheck');
 const errorHandler = require('./errors');
 const logger = require('./logger');
+const eventStreams = require('./eventStreams');
 const Hapi = require('hapi');
 const Hoek = require('hoek');
 const Joi = require('joi');
@@ -46,22 +47,26 @@ function handleInternalError(reply, msg = 'Internal Server Error', err = undefin
     reply(payload).code(500);
 }
 
+function enrichPayload(payload) {
+    const now = new Date();
+    const defaultData = { 
+        data: {
+            id: uuid.v4(),
+            attributes: { 
+                createdOn: now,
+                updatedOn: now
+            }
+        }
+    };
+    return addTotals(deepMerge(payload, defaultData));    
+}
 server.route({
     method: 'POST',
     path: '/orders',
     handler: (request, reply) => {
-        const now = new Date();
-        const defaultData = { 
-            data: {
-                id: uuid.v4(),
-                attributes: { 
-                    createdOn: now,
-                    updatedOn: now
-                }
-            }
-        };
-        const payload = addTotals(deepMerge(request.payload, defaultData));
-        events.publish(events.fromResource(payload, 'orders.created'))
+        const payload = enrichPayload(request.payload);
+        eventStreams.orderSubject.onNext(payload);
+        events.publish(events.fromResource(payload, 'orders.submitted'))
         .subscribe(
             () => {}, 
             (err) => handleInternalError(reply, 'Failed to broadcast order creation', err, 'fatal'),
