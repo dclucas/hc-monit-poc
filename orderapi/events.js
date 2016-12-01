@@ -2,10 +2,12 @@
 
 module.exports = function(config) {
     const RxAmqpLib = require('rx-amqplib');
+    const Rx = require('rx');
     const R = require('ramda');
     const Package = require('./package');
     const logger = require('./logger');
     const errorHandler = require('./errors');
+    const eventStreams = require('./eventStreams');
     
     return {
         checkChannel: function() {
@@ -29,7 +31,8 @@ module.exports = function(config) {
         },
 
         publish: function(eventData) {
-            logger.trace('Publishing event', eventData);
+            //logger.trace('Publishing event', eventData);
+            eventStreams.orderSubject.onNext(eventData);
             return RxAmqpLib.newConnection(config.amqpHost)
               .flatMap(connection => connection
                 .createChannel()
