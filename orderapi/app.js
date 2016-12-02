@@ -65,6 +65,10 @@ server.route({
     path: '/orders',
     handler: (request, reply) => {
         const payload = enrichPayload(request.payload);
+        events.broadcast(payload)
+        .then(() => reply(payload).code(202))
+        .catch((err) => reply({ msg: 'Error!', err: err }).code(500));
+        /*
         eventStreams.orderSubject.onNext(payload);
         events.publish(events.fromResource(payload, 'orders.submitted'))
         .subscribe(
@@ -75,6 +79,7 @@ server.route({
                 reply(payload).code(202);
             }
         );
+        */
     },
     config: {
         tags: ['api'],

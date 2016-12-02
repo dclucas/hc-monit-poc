@@ -2,19 +2,24 @@
 
 import test from 'ava';
 import * as got from 'got';
-
-var server;
+import * as config from '../config';
 
 test.before(t => {
-    return require('../app.js')
-    .then(s => server = s);
+    return require('../app.js');
 })
 
 test('Send order', t => {
-    return got.post(`${server.info.uri}/orders`, {
-        body: JSON.stringify({ data: { 
-            type: 'orders'
-        } }),
+    return got.post(`http://localhost:${config.port}/orders`, {
+        body: JSON.stringify({
+                "data": {
+                    "type": "orders",
+                    "attributes": {
+                        "items": [
+                            {"productId": "8130a0c2-e374-4135-b630-2087e305c090", "quantity":1}
+                        ]
+                    }       
+                }
+            }),
         headers: {
             'Content-Type': 'application/json'
         }
