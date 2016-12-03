@@ -3,9 +3,10 @@
 import test from 'ava';
 import * as got from 'got';
 import * as config from '../app/config';
+import * as eventStreams from '../app/eventStreams';
 
 test.before(t => {
-    return require('../index.js');
+    return require('../app/index.js')(config, eventStreams);
 })
 
 test('Send order', t => {
