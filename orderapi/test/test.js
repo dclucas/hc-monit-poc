@@ -2,10 +2,10 @@
 
 import test from 'ava';
 import * as got from 'got';
-import * as config from '../config';
+import * as config from '../app/config';
 
 test.before(t => {
-    return require('../app.js');
+    return require('../index.js');
 })
 
 test('Send order', t => {

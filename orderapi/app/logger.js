@@ -1,7 +1,7 @@
 'use strict'
 
 const bunyan = require('bunyan');
-const p = require('./package');
+const p = require('../package');
 const events = require('./eventStreams');
 const config = require('./config');
 const logger = bunyan.createLogger({name: `${p.name}:${p.version}`, level: config.logLevel});
