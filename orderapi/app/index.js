@@ -25,7 +25,7 @@ module.exports = function(config, eventStreams) {
             }
             server.start((err) => {
                 if (err) {
-                    reject(err)
+                    reject(err);
                 }
                 console.log(`Server started at ${server.info.uri}`);
                 events.checkChannel()

@@ -4,9 +4,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "./node_modules/.bin/ava",
+    "test": "./node_modules/.bin/ava --timeout=2s",
     "watch": "./node_modules/.bin/nodemon app.js",
-    "watch-test": "./node_modules/.bin/ava --watch",
+    "watch-test": "./node_modules/.bin/ava --watch --timeout=2s",
     "send-dummy": "node send-dummy.js"
   },
   "keywords": [],
