@@ -38,24 +38,18 @@ function addTotals(payload) {
     return deepMerge(payload, data);
 }
 
-function handleInternalError(reply, msg = 'Internal Server Error', err = undefined, level = 'error') {
-    const payload = errorHandler.report(err, msg, level);
-    healthcheck.changeStatus('red', msg);
-    reply(payload).code(500);
-}
-
 function enrichPayload(payload) {
     const now = new Date();
-    const defaultData = { 
+    const defaultData = {
         data: {
             id: uuid.v4(),
-            attributes: { 
+            attributes: {
                 createdOn: now,
                 updatedOn: now
             }
         }
     };
-    return addTotals(deepMerge(payload, defaultData));    
+    return addTotals(deepMerge(payload, defaultData));
 }
 
 module.exports.configureEndpoint = function(server) {

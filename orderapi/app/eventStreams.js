@@ -1,8 +1,7 @@
 'use strict'
 
 const Rx = require('rx');
-const orderSubject = new Rx.Subject();
-const errorSubject = new Rx.Subject();
 
-module.exports.errorSubject = errorSubject;
-module.exports.orderSubject = orderSubject;
+module.exports.errorSubject = new Rx.Subject();
+module.exports.orderSubject = new Rx.Subject();
+module.exports.systemSubject = new Rx.Subject();

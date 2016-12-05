@@ -2,6 +2,7 @@
 
 const Joi = require('joi');
 const eventStreams = require('./eventStreams');
+const errors = require('./errors');
 
 const defaultStatus = 'green';
 const defaultReason = 'no issues found';
@@ -11,23 +12,25 @@ var reason;
 var updatedOn;
 
 function resetStatus() {
-    // fixme: this code is very frail from a concurrency standpoint. Introduce 
+    // fixme: this code is very frail from a concurrency standpoint. Introduce
     // a time-based semaphor to control status reset.
     status = defaultStatus;
     reason = defaultReason;
     updatedOn = new Date();
 }
 
-eventStreams.errorSubject.subscribe(
-    function (x) { },
-    function (e) { },
-    function () { }
-);
+eventStreams.systemSubject
+    .where((event) => !errors.isErrorEvent(event))
+    .subscribeOnNext(() => changeStatus('green', 'success'));
+
+eventStreams.systemSubject
+    .where((event) => errors.isErrorEvent(event))
+    .subscribeOnNext(() => changeStatus('red', 'reason!'));
 
 resetStatus();
 
 module.exports.resetStatus = resetStatus;
-module.exports.changeStatus = function(newStatus, newReason) {
+function changeStatus(newStatus, newReason) {
     status = newStatus;
     reason = newReason;
     updatedOn = new Date();
