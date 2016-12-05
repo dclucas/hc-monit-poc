@@ -51,11 +51,12 @@ module.exports = function(config) {
                 .tap((ch) => ch.assertExchange(config.exchange, config.exchangeType, { durable: false }) )
                 .tap((ch) => ch.publish(config.exchange, '', new Buffer(JSON.stringify((eventData)))))
                 // fixme: publish event to stream instead of logging
-                .catch((err) => logger.fatal(err))
+                //.catch((err) => logger.fatal(err))
+                .catch((err) => eventStreams.errorSubject.onNext(err))
                 //todo: consider using finally instead of then here
                 .then((ch) => ch.close())
             )
-            .catch((err) => logger.fatal(err))
+            .catch((err) => eventStreams.errorSubject.onNext(err))
             //todo: consider using finally instead of then here
             .then((conn) => conn.close());
 

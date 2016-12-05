@@ -8,10 +8,8 @@ import * as appStart from '../app/index';
 const logger = require('../app/logger');
 
 test.before((t) => {
-    //logger.debug({ t }, 'before');
-    //const app = require('../app/index')(config, eventStreams);
-    //t.context = { app };
-    //return app;
+    const app = require('../app/index')(config, eventStreams);
+    return app;
 });
 
 //test.serial('Health check: red status (serial test)', () => console.log('serial 1'));
@@ -49,4 +47,5 @@ test('Send order', t =>
     )
 );
 
+//todo: consider validating the payload as well
 test('Green health', t => testHttp(t, 'get', `http://localhost:${config.port}/healthcheck`, null));

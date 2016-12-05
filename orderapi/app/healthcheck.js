@@ -1,6 +1,7 @@
 'use strict'
 
 const Joi = require('joi');
+const eventStreams = require('./eventStreams');
 
 const defaultStatus = 'green';
 const defaultReason = 'no issues found';
@@ -16,6 +17,12 @@ function resetStatus() {
     reason = defaultReason;
     updatedOn = new Date();
 }
+
+eventStreams.errorSubject.subscribe(
+    function (x) { },
+    function (e) { },
+    function () { }
+);
 
 resetStatus();
 
