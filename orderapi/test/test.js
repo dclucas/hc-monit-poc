@@ -12,7 +12,26 @@ test.before((t) => {
     return app;
 });
 
-//test.serial('Health check: red status (serial test)', () => console.log('serial 1'));
+function getUrl(route) {
+    return `http://localhost:${config.port}${route}`;
+}
+
+test.serial('Health check: red/yellow status', 
+    (t) => {
+        eventStreams.systemSubject.onNextError('Fake Error!');
+        return testHttp(t, 'get', getUrl('/healthcheck'), null, (t, r) => { 
+            const body = JSON.parse(r.body);
+            if (r.statusCode === 500) {
+                t.true(body.status === 'red', 'A 500 healthcheck response should have status red');
+                t.true(body.details[0].result === 'error', 'A 500 healthcheck response should have an error on its stack top');
+            } else {
+                t.true(r.statusCode === 200, 'A healthcheck response status should be either 500 or 200');
+                t.true(body.status === 'yellow', 'The recently introduced error should have caused the hc response to turn red or yelow');
+                t.true(body.details[0].result === 'success', 'A yellow status should have a succes on top of its stack');
+            }
+        });
+    }
+);
 //test.serial(() => console.log('serial 2'));
 
 function checkResponse(t, response) {
@@ -24,7 +43,8 @@ function testHttp(t, verb, uri, body, validateResponse = checkResponse) {
     logger.debug(`Running a ${verb} against ${uri}. Body: ${body}`);
     return got[verb](uri, { body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' }})
     .then((response) => {
-        return validateResponse(t, response)
+        logger.debug({ body: response.body, statusCode: response.statusCode }, 'Got response');
+        return validateResponse(t, response);
     })
     .catch((err) => { logger.error(err); throw err; });
 }
