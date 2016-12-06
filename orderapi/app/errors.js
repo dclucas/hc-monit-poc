@@ -9,13 +9,19 @@ const Rx = require('rx');
 // fixme: invert this -- callers should directly do an onNext instead of reporting an error
 const eventStreams = require('./eventStreams');
 
-function createErrorEvent(error, payload = {}) {
+module.exports.createErrorEvent = function(error, payload = {}) {
   return R.merge({ level: 'error', result: 'error', id: uuid.v4(), error}, payload);
 }
 
-function isErrorEvent(payload) {
+module.exports.isErrorEvent = function(payload) {
   return payload.result === 'error';
 }
 
-module.exports.createErrorEvent = createErrorEvent;
-module.exports.isErrorEvent = isErrorEvent;
+module.exports.isSuccessEvent = function(payload) {
+  return payload.result === 'success';
+}
+
+module.exports.isWarningEvent = function(payload) {
+  return payload.result === 'warning';
+}
+
