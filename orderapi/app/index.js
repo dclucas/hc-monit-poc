@@ -29,14 +29,6 @@ module.exports = function(config, eventStreams) {
                 }
                 console.log(`Server started at ${server.info.uri}`);
                 events.checkChannel()
-                .subscribe(
-                    () => {}, 
-                    (err) => {
-                        healthcheck.changeStatus('red', 'Cannot connect to channel');
-                    },
-                    () => {}
-                );
-
                 resolve(server);
             });
         });

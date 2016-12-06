@@ -9,7 +9,7 @@ module.exports = function(config) {
     const errorHandler = require('./errors');
     const eventStreams = require('./eventStreams');
     const amqp = require('amqplib');
-    
+
     return {
         checkChannel: function() {
             return RxAmqpLib.newConnection(config.amqpHost)
@@ -46,16 +46,18 @@ module.exports = function(config) {
 
         broadcast: function(eventData) {
             const pubPromise = amqp.connect(config.amqpHost)
-            .tap((conn) => 
+            .tap((conn) =>
                 conn.createChannel()
                 .tap((ch) => ch.assertExchange(config.exchange, config.exchangeType, { durable: false }) )
                 .tap((ch) => ch.publish(config.exchange, '', new Buffer(JSON.stringify((eventData)))))
                 // fixme: publish event to stream instead of logging
-                .catch((err) => logger.fatal(err))
+                //.catch((err) => logger.fatal(err))
+                .catch((err) => eventStreams.systemSubject.onNext(errorHandler.createErrorEvent(err)))
                 //todo: consider using finally instead of then here
                 .then((ch) => ch.close())
             )
-            .catch((err) => logger.fatal(err))
+            .tap((ch) => eventStreams.systemSubject.onNext({ result: 'success'}))
+            .catch((err) => eventStreams.systemSubject.onNext(errorHandler.createErrorEvent(err)))
             //todo: consider using finally instead of then here
             .then((conn) => conn.close());
 
