@@ -45,13 +45,6 @@ Rx.Observable.timer(0, config.healthcheckInterval)
 
 resetStatus();
 
-module.exports.resetStatus = resetStatus;
-function changeStatus(newStatus, newReason) {
-    status = newStatus;
-    reason = newReason;
-    updatedOn = new Date();
-}
-
 function getStatus(acc, current) {
     console.log(current);
     if (errors.isErrorEvent(current)) {
