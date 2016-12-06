@@ -1,7 +1,7 @@
 'use strict'
 
 const Joi = require('joi');
-const eventStreams = require('./eventStreams');
+const systemSubject = require('./eventStreams').systemSubject;
 const errors = require('./errors');
 const logger = require('./logger');
 const RxAmqpLib = require('rx-amqplib');
@@ -15,14 +15,6 @@ var status;
 var reason;
 var updatedOn;
 
-function resetStatus() {
-    // fixme: this code is very frail from a concurrency standpoint. Introduce
-    // a time-based semaphor to control status reset.
-    status = defaultStatus;
-    reason = defaultReason;
-    updatedOn = new Date();
-}
-
 function checkChannel () {
     return RxAmqpLib.newConnection(config.amqpHost)
       .flatMap(connection => connection
@@ -32,18 +24,13 @@ function checkChannel () {
         .flatMap(() => connection.close())
       )
       .subscribe(
-        () => eventStreams.systemSubject.onNext({ result: 'success'}),
-        () => eventStreams.systemSubject.onNext({ result: 'error'}),
-        // todo: review this -- it should never happen
-        () => eventStreams.systemSubject.onNext({ result: 'completed'})
-        );
+        (x) => systemSubject.onNextSuccess({ process: 'healthcheck' }),
+        (x) => systemSubject.onNextError({ process: 'healthcheck' }),
+        () => {});
 }
 
 
-Rx.Observable.timer(0, config.healthcheckInterval)
-    .subscribeOnNext(() => checkChannel());
-
-resetStatus();
+Rx.Observable.timer(0, config.healthcheckInterval).subscribeOnNext(checkChannel);
 
 function getStatus(acc, current) {
     console.log(current);
@@ -58,25 +45,17 @@ module.exports.configureEndpoint = function(server) {
         method: 'GET',
         path: '/healthcheck',
         handler: (request, reply) => {
-            eventStreams.systemSubject
+            systemSubject
             .takeUntilWithTime(config.healthcheckWaitTime)
             .reduce(getStatus, { status: 'green', reason: 'No issues found' })
-            .subscribeOnNext(
-            function (x) {
-                reply({ 
-                    status: x.status, 
-                    reason: x.reason,
-                    updatedOn
-                }).code(200)
-            }
-            );
+            .subscribeOnNext(x => reply(x).code(x.status === 'red'? 500 : 200));
         },
         config: {
             tags: ['api'],
             response: { schema: {
                 status: Joi.string().valid(['green', 'yellow', 'red']),
                 reason: Joi.string(),
-                updatedOn: Joi.date()
+                time: Joi.date()
             }}
         },
     });
