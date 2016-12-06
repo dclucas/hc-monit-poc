@@ -6,7 +6,7 @@
     "start": "node index.js",
     "test": "./node_modules/.bin/ava --timeout=2s",
     "watch": "./node_modules/.bin/nodemon index.js",
-    "watch-test": "./node_modules/.bin/ava --watch --timeout=2s",
+    "watch-test": "./node_modules/.bin/ava --watch --timeout=5s",
     "send-dummy": "node send-dummy.js"
   },
   "keywords": [],
