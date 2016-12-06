@@ -17,7 +17,6 @@ function createErrorEvent(payload) {
 }
 
 function isErrorEvent(payload) {
-  console.log(payload);
   return payload.result === 'error';
 }
 

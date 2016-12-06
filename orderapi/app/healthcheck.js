@@ -53,6 +53,7 @@ function changeStatus(newStatus, newReason) {
 }
 
 function getStatus(acc, current) {
+    console.log(current);
     if (errors.isErrorEvent(current)) {
         return { status: 'red', reason: 'error!' }
     }
@@ -65,78 +66,17 @@ module.exports.configureEndpoint = function(server) {
         path: '/healthcheck',
         handler: (request, reply) => {
             eventStreams.systemSubject
-            .take(10)
+            .takeUntilWithTime(config.healthcheckWaitTime)
             .reduce(getStatus, { status: 'green', reason: 'No issues found' })
-            .subscribe(
+            .subscribeOnNext(
             function (x) {
-                console.log('Next: ' + x.toString());
                 reply({ 
-                    status: 'red', 
-                    reason,
+                    status: x.status, 
+                    reason: x.reason,
                     updatedOn
                 }).code(200)
-            },
-            function (err) {
-                console.log('Error: ' + err);
-                // reply({ 
-                //     status: 'red', 
-                //     reason,
-                //     updatedOn
-                // }).code(200)
-            },
-            function () {
-                console.log('Completed');
-                // reply({ 
-                //     status: 'red', 
-                //     reason,
-                //     updatedOn
-                // }).code(200)
             }
-                );
-            /*eventStreams.systemSubject.subscribe(
-            function (x) {
-                console.log('Next: ' + x.toString());
-                reply({ 
-                    status: 'red', 
-                    reason,
-                    updatedOn
-                }).code(200)
-            },
-            function (err) {
-                console.log('Error: ' + err);
-                // reply({ 
-                //     status: 'red', 
-                //     reason,
-                //     updatedOn
-                // }).code(200)
-            },
-            function () {
-                console.log('Completed');
-                // reply({ 
-                //     status: 'red', 
-                //     reason,
-                //     updatedOn
-                // }).code(200)
-            });
-*/
-            /*
-            eventStreams.systemSubject
-            //.where((event) => errors.isErrorEvent(event))
-            .subscribeOnNext(() => {
-                reply({ 
-                    status: 'red', 
-                    reason,
-                    updatedOn
-                }).code(200)
-            });
-            */
-            /*
-            reply({ 
-                status: 'green', 
-                reason,
-                updatedOn
-            }).code(200);
-            */
+            );
         },
         config: {
             tags: ['api'],

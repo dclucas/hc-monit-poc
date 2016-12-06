@@ -8,4 +8,5 @@ config.logLevel = 'warn';
 config.replayBufferSize = 5;
 config.replayWindowSize = 5000;
 config.healthcheckInterval = 1000;
+config.healthcheckWaitTime = 500;
 module.exports = config;
